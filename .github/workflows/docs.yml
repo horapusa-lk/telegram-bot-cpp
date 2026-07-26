@@ -1,0 +1,39 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Doxygen
+        run: |
+          curl -sL -o doxygen.tar.gz \
+            https://github.com/doxygen/doxygen/releases/download/Release_1_10_0/doxygen-1.10.0.linux.bin.tar.gz
+          tar xf doxygen.tar.gz
+          echo "$PWD/doxygen-1.10.0/bin" >> "$GITHUB_PATH"
+      - name: Build API reference (warnings are errors)
+        run: |
+          cmake -S . -B build -DTGBOT_BUILD_DOCS=ON -DTGBOT_BUILD_TESTS=OFF -DTGBOT_BUILD_EXAMPLES=OFF
+          cmake --build build --target docs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/docs/doxygen/html
+      - id: deployment
+        uses: actions/deploy-pages@v4

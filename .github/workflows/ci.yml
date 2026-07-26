@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  linux:
+    name: Linux ${{ matrix.compiler }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { compiler: gcc,   cc: gcc-13,   cxx: g++-13,     sanitizers: OFF }
+          - { compiler: clang, cc: clang-18, cxx: clang++-18, sanitizers: ON }
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libssl-dev
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: >
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DTGBOT_SANITIZERS=${{ matrix.sanitizers }}
+      - name: Build (warnings are errors)
+        run: cmake --build build
+      - name: Unit tests
+        run: ctest --test-dir build --output-on-failure -L unit
+
+  windows:
+    name: Windows MSVC
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Build (warnings are errors)
+        run: cmake --build build
+      - name: Unit tests
+        run: ctest --test-dir build --output-on-failure -L unit
+
+  quality:
+    name: Docs, format, inventory, doc snippets
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: sudo apt-get update && sudo apt-get install -y clang-format-18 ninja-build libssl-dev
+      - name: Install pinned Doxygen
+        run: |
+          curl -sL -o doxygen.tar.gz \
+            https://github.com/doxygen/doxygen/releases/download/Release_1_10_0/doxygen-1.10.0.linux.bin.tar.gz
+          tar xf doxygen.tar.gz
+          echo "$PWD/doxygen-1.10.0/bin" >> "$GITHUB_PATH"
+      - name: Inventory is valid and generation is clean
+        # generate.py re-runs clang-format on its own output, so the diff
+        # check and the format check agree.
+        run: |
+          sudo ln -sf $(which clang-format-18) /usr/local/bin/clang-format
+          python3 tools/validate_inventory.py
+          python3 tools/generate.py
+          git diff --exit-code -- include src tests
+      - name: Docs accuracy lint
+        run: python3 tools/lint_docs.py
+      - name: clang-format check
+        run: |
+          git ls-files '*.hpp' '*.cpp' | xargs clang-format-18 --dry-run --Werror
+      - name: Doxygen (zero warnings)
+        run: |
+          cmake -S . -B build -G Ninja -DTGBOT_BUILD_DOCS=ON -DTGBOT_BUILD_TESTS=OFF -DTGBOT_BUILD_EXAMPLES=OFF
+          cmake --build build --target docs

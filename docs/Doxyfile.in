@@ -1,0 +1,34 @@
+# Doxygen configuration for tgbot-cpp-full (configured by CMake).
+
+PROJECT_NAME           = "tgbot"
+PROJECT_NUMBER         = "@PROJECT_VERSION@"
+PROJECT_BRIEF          = "Complete C++20 client for the Telegram Bot API"
+OUTPUT_DIRECTORY       = "@CMAKE_CURRENT_BINARY_DIR@/doxygen"
+
+INPUT                  = "@CMAKE_SOURCE_DIR@/include/tgbot" \
+                         "@CMAKE_SOURCE_DIR@/docs/mainpage.md"
+RECURSIVE              = YES
+USE_MDFILE_AS_MAINPAGE = "@CMAKE_SOURCE_DIR@/docs/mainpage.md"
+
+# The gate: every public symbol must be documented.
+EXTRACT_ALL            = NO
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES
+WARN_AS_ERROR          = FAIL_ON_WARNINGS
+QUIET                  = YES
+
+# Internal machinery is not part of the documented surface.
+EXCLUDE                = "@CMAKE_SOURCE_DIR@/include/tgbot/detail"
+EXCLUDE_SYMBOLS        = nlohmann::* tgbot::detail::*
+
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+HAVE_DOT               = NO
+
+FULL_PATH_NAMES        = YES
+STRIP_FROM_PATH        = "@CMAKE_SOURCE_DIR@"
+STRIP_FROM_INC_PATH    = "@CMAKE_SOURCE_DIR@/include"
+SORT_MEMBER_DOCS       = NO
+SHOW_INCLUDE_FILES     = NO
+BUILTIN_STL_SUPPORT    = YES
+DISTRIBUTE_GROUP_DOC   = YES

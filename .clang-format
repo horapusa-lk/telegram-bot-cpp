@@ -1,0 +1,16 @@
+# Style for tgbot-cpp-full. Generated sources follow the same style; re-run
+# `python tools/generate.py` followed by clang-format on src/generated and
+# include/tgbot/{types,api}.hpp after an API version bump.
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++20
+IndentWidth: 4
+ColumnLimit: 100
+AccessModifierOffset: -4
+DerivePointerAlignment: false
+PointerAlignment: Left
+IncludeBlocks: Preserve
+SortIncludes: CaseSensitive
+AllowShortFunctionsOnASingleLine: Inline
+BinPackArguments: true
+BinPackParameters: true

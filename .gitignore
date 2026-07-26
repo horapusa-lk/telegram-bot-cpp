@@ -1,0 +1,22 @@
+# Local secrets — never commit tokens
+.env
+
+# Build trees
+build/
+out/
+cmake-build-*/
+
+# Locally fetched tooling (doxygen, etc.)
+.tools/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors / OS noise
+.vs/
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store

@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($tools = 'cmake','git','python','ninja','doxygen','clang-format','cl','g++','clang++','curl','cloudflared'; foreach \\($t in $tools\\) { $cmd = Get-Command $t -ErrorAction SilentlyContinue; if \\($cmd\\) { Write-Output \"$t => $\\($cmd.Source\\)\" } else { Write-Output \"$t => NOT FOUND\" } })"
+    ]
+  }
+}
